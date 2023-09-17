@@ -31,19 +31,30 @@ class VideoPlayer:
         label.grid(row=0, column=0, sticky="nsew")
         self.video_frame.grid(row=0, column=0, columnspan=2, sticky='nsew')
 
-        # Tạo nút để mở video
+        # Create button để mở video
         self.open_button = tk.Button(master, text="Open Video", font=self.font_text, activebackground=COLOR_GREEN, width=10, command=self.open_video)
         self.open_button.grid(row=3, column=1, sticky="s")
+        # label tùy chọn
+        self.my_label = tk.Label(root, text="Nhập ip camera", font=("Arial", 12))
+        self.my_label.grid(row=5, column=1)
 
-        # Tạo nút để thoát chương trình
+        # Create button get ip
+        self.entry = tk.Entry(master)
+        self.entry.grid(row=6, column=1, sticky="s")
+
+        # Create button để mở camera
+        self.cam_button = tk.Button(master, text="Open Camera", font=self.font_text, activebackground=COLOR_GREEN, width=10, command=self.open_camera)
+        self.cam_button.grid(row=7, column=1, sticky="s")
+
+        # Create button để thoát chương trình
         self.quit_button = tk.Button(master, text="Quit", font=self.font_text, activebackground=COLOR_GREEN, width=10, command=self.quit)
         self.quit_button.grid(row=4, column=1)
 
-        # label
+        # label tùy chọn
         self.my_label = tk.Label(root, text="Tùy Chọn", font=("Arial", 12))
         self.my_label.grid(row=1, column=0)
 
-        # Tạo nút để thoát chương trình
+        # Tạo nút tùy chọn các nhãn
         self.Stand_button = tk.Button(master, text="Stand", font=self.font_text, activebackground=COLOR_GREEN, width=10, command=self.set_Detect_Stand)
         self.Stand_button.grid(row=2, column=0)
 
@@ -127,9 +138,6 @@ class VideoPlayer:
         # Kiểm tra xem người dùng đã chọn một tập tin hay chưa
         if filename:
             cap = cv2.VideoCapture(filename)
-            # Mở video từ DroidCam
-            # url = 'http://192.168.43.233:4747/video'
-            # video = cv2.VideoCapture(url)
             while True:
                 # Đọc từng khung hình từ video
                 ret, frame = cap.read()
@@ -154,6 +162,39 @@ class VideoPlayer:
             cap.release()
             cv2.destroyAllWindows()
 
+    def open_camera(self):
+        self.set_Model()
+        detect = False
+        points = []
+        x1 = self.entry.get()
+        # Mở video từ DroidCam
+        url = 'http://' + x1 + '/video'
+        print(url)
+        cap = cv2.VideoCapture(url)
+        while True:
+            # Đọc từng khung hình từ video
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frame = cv2.resize(frame, (640, 480))
+            frame = self.draw_polygon(frame, points)
+            if detect:
+                frame = self.model.detect(frame=frame, points=points)
+            # Thoát khỏi vòng lặp khi người dùng nhấn phím Esc
+            key = cv2.waitKey(1)
+            if key == 27:
+                break
+            elif key == ord('d'):
+                points.append(points[0])
+                detect = True
+            # Hiển thị khung hình trong khung chứa video
+            cv2.imshow('KidTrack', frame)
+            cv2.setMouseCallback("KidTrack", self.handle_left_click, points)
+
+        # Giải phóng tài nguyên
+        cap.release()
+        cv2.destroyAllWindows()
+
     def quit(self):
         self.master.quit()
 
@@ -161,7 +202,7 @@ class VideoPlayer:
 root = tk.Tk()
 # Tính toán kích thước và vị trí của cửa sổ
 window_width = 580
-window_height = 450
+window_height = 500
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 x = int((screen_width - window_width) / 2)

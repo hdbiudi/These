@@ -17,6 +17,9 @@ class App:
         # Tạo nút mở video
         self.btn_open = tk.Button(window, text="Open", font=self.font_text, width=20, bg=COLOR_GREEN, activebackground=COLOR_RED, command=self.open_video)
         self.btn_open.pack(anchor=tk.CENTER, expand=True)
+        # tạo label get ip
+        self.entry1 = tk.Entry(window)
+        self.canvas.create_window(10, 10, window=self.entry1)
 
         # Tạo nút thoát
         self.btn_exit = tk.Button(window, text="Exit", font=self.font_text, width=20, bg=COLOR_GREEN, activebackground=COLOR_RED, command=window.quit)
